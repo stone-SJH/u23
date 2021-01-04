@@ -191,11 +191,10 @@
 
 				                        var currentGeometry = loader.parse(jsonObject).geometry;
 				                        currentGeometry.faceVertexUvs.push(currentGeometry.faceVertexUvs[0]);
-
 				                        // If valid JSON data exists, parse it and push the model data onto the Submeshes array along with the material ID
 				                        submeshes.push({
 				                                data: currentGeometry,
-                                                materialID: submeshesXML[s].getAttribute("mat")
+                                                materialIDs: submeshesXML[s].getAttribute("mat")
 				                        });
 				                    }
 				                }
@@ -221,24 +220,27 @@
 
 				        for (var s = 0; s < submeshes.length; s++)
 				        {
-				            var materialID = submeshes[s].materialID;
-				            var currentMaterial;
+				            var materialIDs = submeshes[s].materialIDs.split(",");
+				            console.log(materialIDs)
+				            var currentMaterials = [];
 				            for (var m = 0; m < materials.length; m++)
 				            {
-				                if (materials[m].name == materialID)
-				                {
-				                    currentMaterial = materials[m];
-				                }
+				            	for (var n = 0; n < materialIDs.length; n++){
+									if (materials[m].name == materialIDs[n])
+									{
+										currentMaterials.push(materials[m]);
+									}
+								}
 				            }
 
-				            if (currentMaterial == null)
+				            if (currentMaterials == null || currentMaterials.length === 0)
 				            {
 				                placeSubMesh(submeshes[s].data, 40, new MeshPhysicalMaterial());
 				            }
 				            else
 				            {
-								console.log(currentMaterial.roughness);
-				                placeSubMesh(submeshes[s].data, 40, currentMaterial);
+				            	console.log(currentMaterials)
+				                placeSubMesh(submeshes[s].data, 40, currentMaterials);
 				            }
 				        }
 				    };
@@ -290,7 +292,7 @@
 
 			function loadMaterial(matNode, textureLoader)
 			{
-				var currentMaterial = new THREE.MeshPhysicalMaterial({
+				var currentMaterial = new THREE.MeshStandardMaterial({
 					name: matNode.getAttribute("id"),
 					color: parseInt(matNode.getAttribute("color"), 16),
 					envMap: hdrCubeRenderTarget.texture,
@@ -349,8 +351,11 @@
 
 			function placeSubMesh(geometry, scale, material)
 			{
-				mesh = new THREE.Mesh( geometry, material );
+				//mesh = new THREE.Mesh( geometry, material );
+				mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, material );
+
 				mesh.scale.x = mesh.scale.y = mesh.scale.z = scale;
+				console.log(mesh);
 				scene.add(mesh);
 			}
 

@@ -5,6 +5,9 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 
+#test
+/[Tt]est/
+
 #macOS fs
 .DS_Store
 

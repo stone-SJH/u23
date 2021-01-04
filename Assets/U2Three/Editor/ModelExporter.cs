@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -133,9 +134,15 @@ namespace U2Three.Editor
         private void GenerateSubMeshXML(int index)
         {
             Transform currentSubMesh = m_subMeshes[index];
+            
+            string mats = String.Empty;
+            foreach (var material in currentSubMesh.GetComponent<MeshRenderer>().sharedMaterials)
+            {
+                if (!mats.Equals(String.Empty)) mats += ",";
+                mats += material.name;
+            }
 
-            m_XMLWriter.WriteLine("\t<Submesh mat=\"" +
-                                  currentSubMesh.GetComponent<MeshRenderer>().sharedMaterials[0].name + "\">");
+            m_XMLWriter.WriteLine("\t<Submesh mat=\"" + mats + "\">");
             GenerateSubMeshJSON(currentSubMesh);
             m_XMLWriter.WriteLine("\t</Submesh>");
 
