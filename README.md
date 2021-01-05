@@ -4,8 +4,9 @@
 
 - [ ] Support SkinnedMeshRenderer
 - [x] Support multiple material applied to one mesh(different sub mesh)
-- [ ] Support exporting customized shader in Unity
-- [ ] Support exporting bones
+- [ ] Support exporting customized shader in Unity(maybe shader templates)
+- [ ] Support exporting bones(skeleton animation)
+- [ ] Support exporting scenes(skybox, fx, ...)
 
 
 ### Problems:
