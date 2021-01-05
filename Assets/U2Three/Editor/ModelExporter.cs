@@ -361,12 +361,12 @@ namespace U2Three.Editor
                     m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(metalness)));
                 }
 
-                Texture roughness = mat.GetTexture("_SpecGlossMap");
-                if (roughness)
-                {
-                    m_XMLWriter.Write("roughnessMap=\"" + roughness.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(roughness)));
-                }
+                // Texture roughness = mat.GetTexture("_SpecGlossMap");
+                // if (roughness)
+                // {
+                //     m_XMLWriter.Write("roughnessMap=\"" + roughness.name + ".png\" ");
+                //     m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(roughness)));
+                // }
 
                 Texture alpha = mat.GetTexture("_DetailMask");
                 if (alpha)
@@ -375,12 +375,14 @@ namespace U2Three.Editor
                     m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(alpha)));
                 }
 
-                // Occlusion map
-                // Texture occlusion = mat.GetTexture("_OcclusionMap");
-                // if (occlusion)
-                // {
-                //     m_XMLWriter.Write("occlusion=\"" + occlusion.name + ".png\" ");
-                // }
+                //Occlusion map
+                Texture occlusion = mat.GetTexture("_OcclusionMap");
+                if (occlusion)
+                {
+                    m_XMLWriter.Write("occlusion=\"" + occlusion.name + ".png\" ");
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(occlusion)));
+
+                }
 
                 //m_XMLWriter.Write("metalness=\"" + mat.GetFloat("_Metallic") + "\" ");
                 //m_XMLWriter.Write("smoothness=\"" + mat.GetFloat("_GlossMapScale") + "\"");
