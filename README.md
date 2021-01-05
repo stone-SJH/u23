@@ -3,7 +3,7 @@
 ### TODO List:
 
 - [ ] Support SkinnedMeshRenderer
-- [ ] Support multiple material applied to one submesh
+- [x] Support multiple material applied to one mesh(different sub mesh)
 - [ ] Support exporting customized shader in Unity
 - [ ] Support exporting bones
 
