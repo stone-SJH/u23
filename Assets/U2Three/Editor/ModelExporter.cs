@@ -4,17 +4,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Linq;
 
 namespace U2Three.Editor
 {
     public class ModelExporter : EditorWindow
     {
+        struct MeshInfo
+        {
+            public Mesh mesh;
+            public List<Material> mats;
+            public Transform trans;
+
+            public MeshInfo(Mesh _mesh, List<Material> _mats, Transform _trans)
+            {
+                mesh = _mesh;
+                mats = _mats;
+                trans = _trans;
+            }
+        }
+        
         private StreamWriter m_JSONWriter;
         private StreamWriter m_XMLWriter;
         private Transform[] m_selections;
         private string m_rootFolder;
         private List<Material> m_materials;
-        private List<Transform> m_subMeshes;
+        private List<MeshInfo> m_subMeshes;
         private List<string> m_filesToCollect = new List<string>();
 
         private float m_progress;
@@ -56,7 +71,7 @@ namespace U2Three.Editor
                 }
 
                 EditorUtility.DisplayProgressBar("Generating Model Data",
-                    "Current Mesh: " + m_subMeshes[m_processesCompleted].name, m_progress);
+                    "Current Mesh: " + m_subMeshes[m_processesCompleted].trans.name, m_progress);
                 GenerateSubMeshXML(m_processesCompleted);
 
                 if (m_processesCompleted == m_totalProcesses)
@@ -91,7 +106,7 @@ namespace U2Three.Editor
             m_processesCompleted = 0;
             m_totalProcesses = 0;
 
-            m_subMeshes = new List<Transform>();
+            m_subMeshes = new List<MeshInfo>();
             m_XMLWriter = new StreamWriter(outputUrl);
             m_materials = new List<Material>();
 
@@ -106,16 +121,75 @@ namespace U2Three.Editor
 
         private void RecurseChild(Transform transform)
         {
-            if (transform.GetComponent<MeshFilter>())
-            {
-                //Debug.Log(_transform.name);
-
-                m_totalProcesses++;
-                m_subMeshes.Add(transform);
-            }
-
             if (transform.GetComponent<MeshRenderer>())
             {
+                if (!transform.GetComponent<MeshFilter>())
+                {
+                    Debug.LogError("Failed to get MeshFilter of \"" + transform.name + "\".");
+                    return;
+                }
+
+                var mesh = transform.GetComponent<MeshFilter>().sharedMesh;
+                var materials = transform.GetComponent<MeshRenderer>().sharedMaterials;
+
+                //Split mesh into multiple sub meshes if needed
+                if (mesh.subMeshCount > 1)
+                {
+                    List<Mesh> subMeshes = new List<Mesh>();
+                    for (int i = 0; i < mesh.subMeshCount; i++)
+                    {
+                        subMeshes.Add(mesh.GetSubmesh(i));
+                    }
+
+                    //Then Apply material to these new meshes
+                    if (materials.Length > subMeshes.Count)
+                    {
+                        /*
+                         * ref https://docs.unity3d.com/Manual/class-MeshRenderer.html#materials:
+                         * If a Mesh contains more Materials than sub-Meshes, Unity renders the last sub-Mesh with each of the remaining Materials,
+                         * one on top of the next. This allows you to set up multi-pass rendering on that sub-Mesh.
+                         * However, this can impact the performance at run time. Fully opaque Materials overwrite the previous layers,
+                         * which causes a decrease in performance with no advantage.
+                         */
+                        for (int i = 0; i < subMeshes.Count - 1; i++)
+                        {
+                            m_totalProcesses++;
+                            m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> {materials[i]}, transform));
+                        }
+
+                        List<Material> remainingMats = new List<Material>();
+                        for (int i = subMeshes.Count - 1; i < materials.Length; i++)
+                        {
+                            remainingMats.Add(materials[i]);
+                        }
+                        m_totalProcesses++;
+                        m_subMeshes.Add(new MeshInfo(subMeshes[subMeshes.Count - 1], remainingMats, transform));
+                    }
+                    else
+                    {
+                        for (int i = 0; i < subMeshes.Count; i++)
+                        {
+                            if (i >= materials.Length)
+                            {
+                                m_totalProcesses++;
+                                m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> {}, transform));
+                            }
+                            else
+                            {
+                                m_totalProcesses++;
+                                m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> {materials[i]}, transform));
+                            }
+                        }
+                    }
+                }
+                //If current mesh has only 1 sub mesh, just serialize the whole mesh
+                else 
+                {
+                    m_totalProcesses++;
+                    m_subMeshes.Add(new MeshInfo(mesh, materials.OfType<Material>()?.ToList(), transform));
+                }
+                
+                //Collect all materials information for serialize <Material> node
                 foreach (var mat in transform.GetComponent<MeshRenderer>().sharedMaterials)
                 {
                     if (!m_materials.Contains(mat))
@@ -133,10 +207,10 @@ namespace U2Three.Editor
 
         private void GenerateSubMeshXML(int index)
         {
-            Transform currentSubMesh = m_subMeshes[index];
+            MeshInfo currentSubMesh = m_subMeshes[index];
             
             string mats = String.Empty;
-            foreach (var material in currentSubMesh.GetComponent<MeshRenderer>().sharedMaterials)
+            foreach (var material in m_subMeshes[index].mats)
             {
                 if (!mats.Equals(String.Empty)) mats += ",";
                 mats += material.name;
@@ -150,9 +224,11 @@ namespace U2Three.Editor
             m_progress = (float) m_processesCompleted / (float) m_totalProcesses;
         }
 
-        private void GenerateSubMeshJSON(Transform trans)
+        private void GenerateSubMeshJSON(MeshInfo meshInfo)
         {
-            Mesh _mesh = trans.GetComponent<MeshFilter>().sharedMesh;
+            Mesh mesh = meshInfo.mesh;
+            Transform trans = meshInfo.trans;
+            
             string jsonOut;
 
             // Open submesh
@@ -160,7 +236,7 @@ namespace U2Three.Editor
 
             // Vertices
             jsonOut = "\t\t\"vertices\":[";
-            foreach (Vector3 vertex in _mesh.vertices)
+            foreach (Vector3 vertex in mesh.vertices)
             {
                 // Write each chunk as we confirm subsequent data to keep string size small
                 //Debug.Log("Writing chunk to json: " + jsonOut);
@@ -184,19 +260,19 @@ namespace U2Three.Editor
 
             // Faces
             jsonOut = "\t\t\"faces\":[";
-            for (int i = 0; i < _mesh.triangles.Length; i += 3)
+            for (int i = 0; i < mesh.triangles.Length; i += 3)
             {
                 // Write each chunk as we confirm subsequent data to keep string size small
                 //Debug.Log("Writing chunk to json: " + jsonOut);
                 m_XMLWriter.Write(jsonOut);
                 jsonOut = "";
 
-                jsonOut += "40," + _mesh.triangles[i].ToString() + "," + _mesh.triangles[i + 1].ToString() + "," +
-                           _mesh.triangles[i + 2].ToString() + ","
-                           + _mesh.triangles[i].ToString() + "," + _mesh.triangles[i + 1].ToString() + "," +
-                           _mesh.triangles[i + 2].ToString() + ","
-                           + _mesh.triangles[i].ToString() + "," + _mesh.triangles[i + 1].ToString() + "," +
-                           _mesh.triangles[i + 2].ToString() + ",";
+                jsonOut += "40," + mesh.triangles[i].ToString() + "," + mesh.triangles[i + 1].ToString() + "," +
+                           mesh.triangles[i + 2].ToString() + ","
+                           + mesh.triangles[i].ToString() + "," + mesh.triangles[i + 1].ToString() + "," +
+                           mesh.triangles[i + 2].ToString() + ","
+                           + mesh.triangles[i].ToString() + "," + mesh.triangles[i + 1].ToString() + "," +
+                           mesh.triangles[i + 2].ToString() + ",";
             }
 
             jsonOut = jsonOut.TrimEnd(jsonOut[jsonOut.Length - 1]); // Trim end to remove the last comma
@@ -205,18 +281,18 @@ namespace U2Three.Editor
 
             // Metadata
             m_XMLWriter.Write("\t\t\"metadata\":{\n");
-            m_XMLWriter.Write("\t\t\t\"vertices\":" + _mesh.vertexCount + ",\n");
-            m_XMLWriter.Write("\t\t\t\"faces\":" + _mesh.triangles.Length / 3 + ",\n");
+            m_XMLWriter.Write("\t\t\t\"vertices\":" + mesh.vertexCount + ",\n");
+            m_XMLWriter.Write("\t\t\t\"faces\":" + mesh.triangles.Length / 3 + ",\n");
             m_XMLWriter.Write("\t\t\t\"generator\":\"io_three\",\n");
             m_XMLWriter.Write("\t\t\t\"type\":\"Geometry\",\n");
-            m_XMLWriter.Write("\t\t\t\"normals\":" + _mesh.normals.Length + ",\n");
+            m_XMLWriter.Write("\t\t\t\"normals\":" + mesh.normals.Length + ",\n");
             m_XMLWriter.Write("\t\t\t\"version\":3,\n");
             m_XMLWriter.Write("\t\t\t\"uvs\":1\n");
             m_XMLWriter.Write("\t\t},\n");
 
             // UVs
             jsonOut = "\t\t\"uvs\":[[";
-            foreach (Vector2 uv in _mesh.uv)
+            foreach (Vector2 uv in mesh.uv)
             {
                 // Write each chunk as we confirm subsequent data to keep string size small
                 //Debug.Log("Writing chunk to json: " + jsonOut);
@@ -233,7 +309,7 @@ namespace U2Three.Editor
 
             // Normals
             jsonOut = "\t\t\"normals\":[";
-            foreach (Vector3 normal in _mesh.normals)
+            foreach (Vector3 normal in mesh.normals)
             {
                 // Write each chunk as we confirm subsequent data to keep string size small
                 //Debug.Log("Writing chunk to json: " + jsonOut);

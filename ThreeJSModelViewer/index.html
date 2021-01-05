@@ -351,8 +351,7 @@
 
 			function placeSubMesh(geometry, scale, material)
 			{
-				//mesh = new THREE.Mesh( geometry, material );
-				mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, material );
+				mesh = new THREE.Mesh( geometry, material );
 
 				mesh.scale.x = mesh.scale.y = mesh.scale.z = scale;
 				console.log(mesh);
