@@ -189,7 +189,8 @@
 				                    {
 				                        var jsonObject = JSON.parse(submeshesXML[s].firstChild.data);
 
-				                        var currentGeometry = loader.parse(jsonObject).geometry;
+				                        var currentGeometry = loader.parse(jsonObject).geom
+										etry;
 				                        currentGeometry.faceVertexUvs.push(currentGeometry.faceVertexUvs[0]);
 				                        // If valid JSON data exists, parse it and push the model data onto the Submeshes array along with the material ID
 				                        submeshes.push({

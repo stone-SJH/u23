@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Linq;
+using UnityGLTF;
 
 namespace U2Three.Editor
 {
@@ -23,10 +24,11 @@ namespace U2Three.Editor
                 trans = _trans;
             }
         }
-        
+
         private StreamWriter m_JSONWriter;
         private StreamWriter m_XMLWriter;
         private Transform[] m_selections;
+        private string m_exportedFileName;
         private string m_rootFolder;
         private List<Material> m_materials;
         private List<MeshInfo> m_subMeshes;
@@ -50,15 +52,25 @@ namespace U2Three.Editor
             // Only allow button if we have selected something
             GUI.enabled = (m_selections != null && m_selections.Length > 0);
 
-            if (GUILayout.Button("Export Selection"))
+            if (GUILayout.Button("Export Selection to XML"))
             {
                 m_rootFolder = EditorUtility.SaveFolderPanel("Export Models for ThreeJS", "",
                     m_selections[0].name);
-                
+
                 string path = Path.Combine(m_rootFolder, m_selections[0].name + ".xml");
 
                 if (path.Length > 0)
                     BeginExportModel(path);
+            }
+            
+            if (GUILayout.Button($"Export Selection to GLTF"))
+            {
+                m_exportedFileName =
+                    EditorUtility.SaveFilePanel("Export Models for ThreeJS(GLTF)", "", m_selections[0].name, ""); 
+                
+                if (GenerateGLTFZipped(m_selections) != null) {
+                    EditorUtility.DisplayDialog("Successful Export", "GLTF Exported and Zipped Successfully", "OK");
+                }
             }
 
             if (m_isGenerating)
@@ -69,37 +81,90 @@ namespace U2Three.Editor
                     m_isGenerating = false;
                     return;
                 }
-
+            
                 EditorUtility.DisplayProgressBar("Generating Model Data",
                     "Current Mesh: " + m_subMeshes[m_processesCompleted].trans.name, m_progress);
                 GenerateSubMeshXML(m_processesCompleted);
-
+            
                 if (m_processesCompleted == m_totalProcesses)
                 {
                     m_XMLWriter.WriteLine("</Mesh>\n");
-
+            
                     m_XMLWriter.WriteLine("<Materials>");
                     WriteMaterials();
                     m_XMLWriter.WriteLine("</Materials>");
                     m_XMLWriter.Write("</Model>");
-
+            
                     m_XMLWriter.Close();
-
+            
                     foreach (var file in m_filesToCollect)
                     {
                         if (File.Exists(file))
                         {
                             File.Copy(file, Path.Combine(m_rootFolder, Path.GetFileName(file)), true);
-                            Debug.Log("Copy from " + file + " to " + Path.Combine(m_rootFolder, Path.GetFileName(file)) + ".");
+                            Debug.Log("Copy from " + file + " to " +
+                                      Path.Combine(m_rootFolder, Path.GetFileName(file)) + ".");
                         }
                     }
-                    
+            
                     m_isGenerating = false;
                     EditorUtility.ClearProgressBar();
                 }
             }
         }
 
+        #region ExportToGLTF
+        public Tuple<string, string, string> GenerateGLTFZipped(Transform[] targets) {
+            var path = GenerateGLTF(targets);
+
+            if (path == null) {
+                return path;
+            }
+
+            // otherwise, we need to zip up the entire directory
+            // and delete the original
+            FileHelper.CompressDirectory(path.Item2, path.Item1 + "/" + path.Item3);
+            FileHelper.DeleteDirectory(path.Item2);
+
+            return path;
+        }
+        public Tuple<string, string, string> GenerateGLTF(Transform[] targets) {
+            FileHelper.LastEditorPath = Path.GetDirectoryName(m_exportedFileName);
+
+            string filename = Path.GetFileNameWithoutExtension(m_exportedFileName);
+            Debug.Log(filename);
+
+            var path = FileHelper.LastEditorPath;
+            Debug.Log(path);
+            if (!string.IsNullOrEmpty(path)) {
+                var newpath = path + "/" + filename + "_export_gltf";
+                Debug.Log(newpath);
+                DirectoryInfo info = Directory.CreateDirectory(newpath);
+
+                if (info.Exists) {
+                    if (FileHelper.ExportAnimations == true) {
+                        var exporter = new GLTFEditorExporter(targets);
+                        exporter.SaveGLTFandBin(newpath, filename);
+                    } 
+                    else {
+                        var exporter = new GLTFSceneExporter(targets);
+                        exporter.SaveGLTFandBin(newpath, filename);
+                    }
+
+                    return new Tuple<string, string, string>(path, newpath, filename);
+                }
+
+                EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, could not create export path", "OK");
+            } else {
+                EditorGUILayout.HelpBox("Failed to export since the path is invalid", MessageType.Error);
+                EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, invalid export path provided", "OK");
+            }
+
+            return null;
+        }
+        #endregion
+
+        #region ExportToXML
         private void BeginExportModel(string outputUrl)
         {
             m_progress = 0;
@@ -162,6 +227,7 @@ namespace U2Three.Editor
                         {
                             remainingMats.Add(materials[i]);
                         }
+
                         m_totalProcesses++;
                         m_subMeshes.Add(new MeshInfo(subMeshes[subMeshes.Count - 1], remainingMats, transform));
                     }
@@ -172,23 +238,24 @@ namespace U2Three.Editor
                             if (i >= materials.Length)
                             {
                                 m_totalProcesses++;
-                                m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> {}, transform));
+                                m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> { }, transform));
                             }
                             else
                             {
                                 m_totalProcesses++;
-                                m_subMeshes.Add(new MeshInfo(subMeshes[i], new List<Material> {materials[i]}, transform));
+                                m_subMeshes.Add(
+                                    new MeshInfo(subMeshes[i], new List<Material> {materials[i]}, transform));
                             }
                         }
                     }
                 }
                 //If current mesh has only 1 sub mesh, just serialize the whole mesh
-                else 
+                else
                 {
                     m_totalProcesses++;
                     m_subMeshes.Add(new MeshInfo(mesh, materials.OfType<Material>()?.ToList(), transform));
                 }
-                
+
                 //Collect all materials information for serialize <Material> node
                 foreach (var mat in transform.GetComponent<MeshRenderer>().sharedMaterials)
                 {
@@ -208,7 +275,7 @@ namespace U2Three.Editor
         private void GenerateSubMeshXML(int index)
         {
             MeshInfo currentSubMesh = m_subMeshes[index];
-            
+
             string mats = String.Empty;
             foreach (var material in m_subMeshes[index].mats)
             {
@@ -228,7 +295,7 @@ namespace U2Three.Editor
         {
             Mesh mesh = meshInfo.mesh;
             Transform trans = meshInfo.trans;
-            
+
             string jsonOut;
 
             // Open submesh
@@ -342,7 +409,8 @@ namespace U2Three.Editor
                 if (diffuse)
                 {
                     m_XMLWriter.Write("diffuse=\"" + diffuse.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(diffuse)));
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(),
+                        AssetDatabase.GetAssetPath(diffuse)));
                 }
 
                 // Normal map URL
@@ -350,7 +418,8 @@ namespace U2Three.Editor
                 if (normal)
                 {
                     m_XMLWriter.Write("normal=\"" + normal.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(normal)));
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(),
+                        AssetDatabase.GetAssetPath(normal)));
                 }
 
                 // Metalness map
@@ -358,7 +427,8 @@ namespace U2Three.Editor
                 if (metalness)
                 {
                     m_XMLWriter.Write("metalnessMap=\"" + metalness.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(metalness)));
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(),
+                        AssetDatabase.GetAssetPath(metalness)));
                 }
 
                 // Texture roughness = mat.GetTexture("_SpecGlossMap");
@@ -372,7 +442,8 @@ namespace U2Three.Editor
                 if (alpha)
                 {
                     m_XMLWriter.Write("alphaMap=\"" + alpha.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(alpha)));
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(),
+                        AssetDatabase.GetAssetPath(alpha)));
                 }
 
                 //Occlusion map
@@ -380,7 +451,8 @@ namespace U2Three.Editor
                 if (occlusion)
                 {
                     m_XMLWriter.Write("occlusion=\"" + occlusion.name + ".png\" ");
-                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(occlusion)));
+                    m_filesToCollect.Add(Path.Combine(Directory.GetCurrentDirectory(),
+                        AssetDatabase.GetAssetPath(occlusion)));
 
                 }
 
@@ -446,5 +518,7 @@ namespace U2Three.Editor
 
             return result;
         }
+
+        #endregion
     }
 }
