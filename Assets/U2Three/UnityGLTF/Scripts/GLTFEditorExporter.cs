@@ -139,7 +139,7 @@ namespace UnityGLTF
 				Asset = new Asset
 				{
 					Version = "2.0",
-					Generator = generator.Length > 0 ? generator : "Plattar UnityGLTF (" + Application.unityVersion + ")"
+					Generator = generator.Length > 0 ? generator : "UnityGLTF (" + Application.unityVersion + ")"
 				},
 				Buffers = new List<GLTF.Schema.GLTFBuffer>(),
 				BufferViews = new List<BufferView>(),
@@ -698,8 +698,23 @@ namespace UnityGLTF
 					}
 
 					break;
+				
+				case "Mobile/Diffuse":
+					Debug.Log("Exporting UnityMobileDiffuse...");
+					UnityMobileDiffuseExtension umd = convertUnityMobileDiffuse(materialObj);
+					if (material.Extensions == null)
+						material.Extensions = new Dictionary<string, IExtension>();
+					material.Extensions.Add(UnityMobileDiffuseExtensionFactory.EXTENSION_NAME, umd);
+					Debug.Log(umd.MainTex.Index.Id);
+					registerExtension(UnityMobileDiffuseExtensionFactory.EXTENSION_NAME);
+					break;
+					
 				case "Standard (Specular setup)":
+					Debug.Log("Exporting Standard (Specular setup)...");
+					Debug.Log(material.Name);
 					KHR_materials_pbrSpecularGlossinessExtension pbr = convertSpecular(materialObj);
+					if (material.Extensions == null)
+						material.Extensions = new Dictionary<string, IExtension>();
 					material.Extensions.Add(KHR_materials_pbrSpecularGlossinessExtensionFactory.EXTENSION_NAME, pbr);
 					registerExtension(KHR_materials_pbrSpecularGlossinessExtensionFactory.EXTENSION_NAME);
 
@@ -770,6 +785,13 @@ namespace UnityGLTF
 			{
 				_root.ExtensionsRequired.Add(extension);
 			}
+		}
+
+		private UnityMobileDiffuseExtension convertUnityMobileDiffuse(UnityEngine.Material mat)
+		{
+			TextureInfo mainTex = mat.GetTexture("_MainTex") != null ? ExportTextureInfo(mat.GetTexture("_MainTex")) : null;
+
+			return new UnityMobileDiffuseExtension(mainTex);
 		}
 
 		private KHR_materials_pbrSpecularGlossinessExtension convertSpecular(UnityEngine.Material mat)
@@ -2275,6 +2297,7 @@ namespace UnityGLTF
 			SkinnedMeshRenderer skin = transform.GetComponent<SkinnedMeshRenderer>();
 			GLTF.Schema.Skin gltfSkin = new Skin();
 
+			gltfSkin.Joints = new List<NodeId>();
 			for (int i = 0; i < skin.bones.Length; ++i)
 			{
 				gltfSkin.Joints.Add(

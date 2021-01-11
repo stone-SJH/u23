@@ -44,3 +44,18 @@ sysinfo.txt
 
 # Builds
 *.apk
+
+#web
+node_modules/
+npm-debug.log
+yarn-error.log
+.cache/
+dist
+package-lock.json
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
