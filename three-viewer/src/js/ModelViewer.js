@@ -173,62 +173,52 @@ export default class ModelViewer {
 			this.sunLight.shadow.camera.far
 		));
 
-		// Replace PBR Material
+		// Replace with a certain Material
 		gltfScene.traverse(child => {
 			if (child.isMesh) {
-				child.material = new PBRMaterial(child, environment, {
-					pbrVS,
-					pbrFS,
-					shadowDepthRange
-				});
-				child.material.uniforms.uEnvironmentTransform = this.envRotationMat;
-				child.material.uniforms.uEnvBrightness = this.envBrightness;
-				child.castShadow = true;
-				child.receiveShadow = true;
+				//original pbr material
+				// child.material = new PBRMaterial(child, environment, {
+				// 	pbrVS,
+				// 	pbrFS,
+				// 	shadowDepthRange
+				// });
+				// child.material.uniforms.uEnvironmentTransform = this.envRotationMat;
+				// child.material.uniforms.uEnvBrightness = this.envBrightness;
+				// child.castShadow = true;
+				// child.receiveShadow = true;
 
-				console.log(child);
-
-
+				//ony shows wireframe
 				// child.material = new THREE.MeshBasicMaterial({
 				// 	wireframe: true,
 				// 	side: THREE.DoubleSide,
 				// 	color: new THREE.Color(0x00ffff)
 				// });
 
-				// child.material = new THREE.ShaderMaterial({
-				// 	extensions: {
-				// 		// needed for anti-alias smoothstep, aastep()
-				// 		derivatives: true
-				// 	},
-				// 	//wireframe: true,
-				// 	transparent: true,
-				// 	side: THREE.DoubleSide,
-				// 	uniforms: { // some parameters for the shader
-				// 		time: { value: 0 },
-				// 		fill: { value: new THREE.Color(0x00ffff) },
-				// 		stroke: { value: new THREE.Color(0xff0000) },
-				// 		noiseA: { value: false },
-				// 		noiseB: { value: false },
-				// 		dualStroke: { value: false },
-				// 		seeThrough: { value: false },
-				// 		insideAltColor: { value: true },
-				// 		thickness: { value: 0.01 },
-				// 		secondThickness: { value: 0.05 },
-				// 		dashEnabled: { value: true },
-				// 		dashRepeats: { value: 2.0 },
-				// 		dashOverlap: { value: false },
-				// 		dashLength: { value: 0.55 },
-				// 		dashAnimate: { value: false },
-				// 		squeeze: { value: false },
-				// 		squeezeMin: { value: 0.1 },
-				// 		squeezeMax: { value: 1.0 }
-				// 	},
-				// 	// use glslify here to bring in the GLSL code
-				// 	fragmentShader: wireFS,
-				// 	vertexShader: wireVS
+				//only shows albedo map
+				// child.material = new THREE.MeshBasicMaterial({
+				// 	map: child.material.map
 				// });
-				const helper = new VertexNormalsHelper(child, 2, 0x00ff00);
-				scene.add(helper)
+
+				//only shows metalness map
+				// child.material = new THREE.MeshBasicMaterial({
+				// 	side: THREE.DoubleSide,
+				// 	map: child.material.metalnessMap
+				// });
+
+				//only shows normal map
+				// child.material = new THREE.MeshBasicMaterial({
+				// 	color: new THREE.Color(0xffffff),
+				// 	map: child.material.normalMap
+				// });
+
+				//only shows emissive map
+				child.material = new THREE.MeshBasicMaterial({
+					map: child.material.emissiveMap
+				});
+
+				//vertex normal
+				// const helper = new VertexNormalsHelper(child, 2, 0x00ff00);
+				// scene.add(helper)
 			}
 		});
 
