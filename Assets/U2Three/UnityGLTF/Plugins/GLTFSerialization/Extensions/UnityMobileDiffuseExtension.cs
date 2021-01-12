@@ -19,7 +19,6 @@ namespace GLTF.Schema
 
         public JProperty Serialize()
         {
-            Debug.Log(MainTex.Index.Id);
             JProperty jProperty = new JProperty(UnityMobileDiffuseExtensionFactory.EXTENSION_NAME,
                 new JObject(
                     new JProperty(UnityMobileDiffuseExtensionFactory.MAIN_TEXTURE,
