@@ -700,7 +700,7 @@ namespace UnityGLTF
 					break;
 				
 				case "Mobile/Diffuse":
-					Debug.Log("Exporting UnityMobileDiffuse...");
+					Debug.Log("Exporting UnityMobileDiffuse..." + materialObj.name);
 					UnityMobileDiffuseExtension umd = convertUnityMobileDiffuse(materialObj);
 					if (material.Extensions == null)
 						material.Extensions = new Dictionary<string, IExtension>();
@@ -710,8 +710,7 @@ namespace UnityGLTF
 					break;
 					
 				case "Standard (Specular setup)":
-					Debug.Log("Exporting Standard (Specular setup)...");
-					Debug.Log(material.Name);
+					Debug.Log("Exporting Standard (Specular setup)..." + materialObj.name);
 					KHR_materials_pbrSpecularGlossinessExtension pbr = convertSpecular(materialObj);
 					if (material.Extensions == null)
 						material.Extensions = new Dictionary<string, IExtension>();

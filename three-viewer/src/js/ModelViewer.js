@@ -177,15 +177,15 @@ export default class ModelViewer {
 		gltfScene.traverse(child => {
 			if (child.isMesh) {
 				//original pbr material
-				// child.material = new PBRMaterial(child, environment, {
-				// 	pbrVS,
-				// 	pbrFS,
-				// 	shadowDepthRange
-				// });
-				// child.material.uniforms.uEnvironmentTransform = this.envRotationMat;
-				// child.material.uniforms.uEnvBrightness = this.envBrightness;
-				// child.castShadow = true;
-				// child.receiveShadow = true;
+				child.material = new PBRMaterial(child, environment, {
+					pbrVS,
+					pbrFS,
+					shadowDepthRange
+				});
+				child.material.uniforms.uEnvironmentTransform = this.envRotationMat;
+				child.material.uniforms.uEnvBrightness = this.envBrightness;
+				child.castShadow = true;
+				child.receiveShadow = true;
 
 				//ony shows wireframe
 				// child.material = new THREE.MeshBasicMaterial({
@@ -212,9 +212,9 @@ export default class ModelViewer {
 				// });
 
 				//only shows emissive map
-				child.material = new THREE.MeshBasicMaterial({
-					map: child.material.emissiveMap
-				});
+				// child.material = new THREE.MeshBasicMaterial({
+				// 	map: child.material.emissiveMap
+				// });
 
 				//vertex normal
 				// const helper = new VertexNormalsHelper(child, 2, 0x00ff00);

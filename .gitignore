@@ -5,6 +5,10 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 
+#third-party resources
+Assets/U2Three/Sample/third-party/
+Assets/U2Three/Sample/third-party.meta
+
 #test
 /[Tt]est/
 
