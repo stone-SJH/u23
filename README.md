@@ -2,15 +2,24 @@
 
 ### TODO List:
 
-- [ ] Support SkinnedMeshRenderer
+##### Unity Exporter
+
+- [x] Support SkinnedMeshRenderer
 - [x] Support multiple material applied to one mesh(different sub mesh)
 - [ ] Support exporting customized shader in Unity(maybe shader templates)
-- [ ] Support exporting bones(skeleton animation)
-- [ ] Support exporting scenes(skybox, fx, ...)
-
-
-### Problems:
-
-- [ ] Threejs is based on a metallic/roughness pbr work flow, so we need to add new workflows or let user specify a certain workflow to use before they upload their models
-- [ ] Volumetric lighting, Particle systems and other systems which are not supported by threejs officially
-
+    - [x] Unity Standard Shader
+    - [x] Unity Standard Specular Shader
+    - [x] Unity Mobile Diffuse Shader
+    - [ ] Other Unity Internal Shaders
+    - [ ] User customized shader flow
+- [x] Support exporting bones
+- [ ] Support exporting animations
+- [ ] Support exporting scenes
+    - [ ] lights
+    - [ ] skybox
+    - [ ] particle system
+    - [ ] LOD
+    - [ ] sounds
+    
+    
+##### threeJS Loader
