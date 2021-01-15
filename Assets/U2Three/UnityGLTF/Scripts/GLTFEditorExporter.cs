@@ -459,7 +459,7 @@ namespace UnityGLTF
 				&& gameObject.transform.localScale == Vector3.one
 				&& GLTFUtils.isValidMeshObject(gameObject);
 		}
-
+ 
 		private MeshId ExportMesh(string name, GameObject[] primitives)
 		{
 			// check if this set of primitives is already a mesh
@@ -2067,32 +2067,34 @@ namespace UnityGLTF
 					Vector4[] rotations = null;
 					bakeCurveSet(targetCurvesBinding[target], clip.length, bakingFramerate, ref times, ref positions, ref rotations, ref scales);
 
+					// Create channel
 					int channelTargetId = getTargetIdFromTransform(ref targetTr);
 					AccessorId timeAccessor = ExportAccessor(times);
-
-					// Create channel
-					AnimationChannel Tchannel = new AnimationChannel();
-					AnimationChannelTarget TchannelTarget = new AnimationChannelTarget();
-					TchannelTarget.Path = GLTFAnimationChannelPath.translation;
-					TchannelTarget.Node = new NodeId
+					
+					// Position
+					AnimationChannel Pchannel = new AnimationChannel();
+					AnimationChannelTarget PchannelTarget = new AnimationChannelTarget();
+					PchannelTarget.Path = GLTFAnimationChannelPath.translation;
+					PchannelTarget.Node = new NodeId
 					{
 						Id = channelTargetId,
 						Root = _root
 					};
 
-					Tchannel.Target = TchannelTarget;
+					Pchannel.Target = PchannelTarget;
 
-					AnimationSampler Tsampler = new AnimationSampler();
-					Tsampler.Input = timeAccessor;
-					Tsampler.Output = ExportAccessor(positions, true); // Vec3 for translation
-					Tchannel.Sampler = new SamplerId
+					AnimationSampler Psampler = new AnimationSampler();
+					Psampler.Input = timeAccessor;
+					Psampler.Output = ExportAccessor(positions, true); // Vec3 for translation
+					
+					Pchannel.Sampler = new SamplerId
 					{
 						Id = animation.Samplers.Count,
 						Root = _root
 					};
 
-					animation.Samplers.Add(Tsampler);
-					animation.Channels.Add(Tchannel);
+					animation.Samplers.Add(Psampler);
+					animation.Channels.Add(Pchannel);
 
 					// Rotation
 					AnimationChannel Rchannel = new AnimationChannel();

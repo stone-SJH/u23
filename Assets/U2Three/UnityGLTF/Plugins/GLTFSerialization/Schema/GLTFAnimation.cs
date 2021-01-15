@@ -49,6 +49,8 @@ namespace GLTF.Schema
 
 		public GLTFAnimation()
 		{
+			Channels = new List<AnimationChannel>();
+			Samplers = new List<AnimationSampler>();
 		}
 
 		public GLTFAnimation(GLTFAnimation animation, GLTFRoot gltfRoot) : base(animation, gltfRoot)
