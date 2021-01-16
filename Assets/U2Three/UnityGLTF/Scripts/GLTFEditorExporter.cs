@@ -1360,6 +1360,14 @@ namespace UnityGLTF
 			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC3;
 
+			if (switchHandedness)
+			{
+				for (var i = 0; i < count; i++)
+				{
+					arr[i] = arr[i].switchHandedness();
+				}
+			}
+
 			float minX = arr[0].x;
 			float minY = arr[0].y;
 			float minZ = arr[0].z;
@@ -1403,19 +1411,9 @@ namespace UnityGLTF
 			var byteOffset = _bufferWriter.BaseStream.Position;
 
 			foreach (var vec in arr) {
-				if(switchHandedness)
-				{
-					Vector3 vect = vec.switchHandedness();
-					_bufferWriter.Write(vect.x);
-					_bufferWriter.Write(vect.y);
-					_bufferWriter.Write(vect.z);
-				}
-				else
-				{
-					_bufferWriter.Write(vec.x);
-					_bufferWriter.Write(vec.y);
-					_bufferWriter.Write(vec.z);
-				}
+				_bufferWriter.Write(vec.x);
+				_bufferWriter.Write(vec.y);
+				_bufferWriter.Write(vec.z);
 			}
 
 			var byteLength = _bufferWriter.BaseStream.Position - byteOffset;
@@ -1444,6 +1442,14 @@ namespace UnityGLTF
 			accessor.ComponentType = GLTFComponentType.Float;
 			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC3;
+			
+			if (switchHandedness)
+			{
+				for (var i = 0; i < count; i++)
+				{
+					arr[i] = arr[i].switchHandedness();
+				}
+			}
 
 			if (GLTFUtils.boundsExportOption == GLTFUtils.BoundsExportOption.Default) {
 				float minX = arr[0].x;
@@ -1512,19 +1518,9 @@ namespace UnityGLTF
 			var byteOffset = _bufferWriter.BaseStream.Position;
 
 			foreach (var vec in arr) {
-				if(switchHandedness)
-				{
-					Vector3 vect = vec.switchHandedness();
-					_bufferWriter.Write(vect.x);
-					_bufferWriter.Write(vect.y);
-					_bufferWriter.Write(vect.z);
-				}
-				else
-				{
-					_bufferWriter.Write(vec.x);
-					_bufferWriter.Write(vec.y);
-					_bufferWriter.Write(vec.z);
-				}
+				_bufferWriter.Write(vec.x);
+				_bufferWriter.Write(vec.y);
+				_bufferWriter.Write(vec.z);
 			}
 
 			var byteLength = _bufferWriter.BaseStream.Position - byteOffset;
@@ -1641,6 +1637,14 @@ namespace UnityGLTF
 			accessor.ComponentType = GLTFComponentType.Float;
 			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
+			
+			if (switchHandedness)
+			{
+				for (var i = 0; i < count; i++)
+				{
+					arr[i] = arr[i].switchHandedness();
+				}
+			}
 
 			float minX = arr[0].x;
 			float minY = arr[0].y;
@@ -1695,11 +1699,10 @@ namespace UnityGLTF
 			var byteOffset = _bufferWriter.BaseStream.Position;
 
 			foreach (var vec in arr) {
-				Vector4 vect = switchHandedness ? vec.switchHandedness() : vec;
-				_bufferWriter.Write(vect.x);
-				_bufferWriter.Write(vect.y);
-				_bufferWriter.Write(vect.z);
-				_bufferWriter.Write(vect.w);
+				_bufferWriter.Write(vec.x);
+				_bufferWriter.Write(vec.y);
+				_bufferWriter.Write(vec.z);
+				_bufferWriter.Write(vec.w);
 			}
 
 			var byteLength = _bufferWriter.BaseStream.Position - byteOffset;
@@ -1983,7 +1986,7 @@ namespace UnityGLTF
 
 				for (int i = 0; i < clips.Length; i++) {
 					GLTF.Schema.GLTFAnimation anim = new GLTF.Schema.GLTFAnimation();
-					anim.Name = GLTFEditorExporter.cleanNonAlphanumeric(a.name);
+					anim.Name = GLTFEditorExporter.cleanNonAlphanumeric(clips[i].name);
 					convertClipToGLTFAnimation(ref clips[i], ref transform, ref anim);
 
 					if (anim.Channels.Count > 0 && anim.Samplers.Count > 0) {
