@@ -155,12 +155,17 @@ export default class ModelViewer {
 		let animations = this.gltf.animations;
 		if (animations && animations.length) {
 			this.animationMixer = new THREE.AnimationMixer(gltfScene);
-			for (let i = 0; i < animations.length; i++) {
-				let animation = animations[i];
-				let action = this.animationMixer.clipAction(animation);
-				action.play();
-			}
+			// for (let i = 0; i < animations.length; i++) {
+			// 	let animation = animations[i];
+			// 	let action = this.animationMixer.clipAction(animation);
+			// 	action.play();
+			// }
+			let animation = animations[0];
+			let action = this.animationMixer.clipAction(animation);
+			action.play();
 		}
+
+		console.log(this.gltf.animations)
 
 		scene.add(gltfScene);
 		this.adjustFactorFromBox(gltfScene);
