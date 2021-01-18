@@ -8,5 +8,10 @@ namespace GLTF.Utilities
 		{
 			return  (uint)System.Math.Round(reader.ReadAsDouble().Value);
 		}
+		
+		public static int ReadDoubleAsInt32(this JsonReader reader)
+		{
+			return  (int)System.Math.Round(reader.ReadAsDouble().Value);
+		}
 	}
 }
