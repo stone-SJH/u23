@@ -12,6 +12,7 @@
     - [x] Unity Mobile Diffuse Shader
     - [ ] Other Unity Internal Shaders
     - [ ] User customized shader flow
+- [ ] Support exporting blend shapes
 - [x] Support exporting bones
 - [ ] Support exporting animations
 - [ ] Support exporting scenes
