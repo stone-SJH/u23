@@ -47,7 +47,7 @@ namespace GLTF.Schema
 		/// with the number of bytes or number of components.
 		/// <minimum>1</minimum>
 		/// </summary>
-		public int Count;
+		public uint Count;
 
 		/// <summary>
 		/// Specifies if the attribute is a scalar, vector, or matrix,
@@ -157,7 +157,7 @@ namespace GLTF.Schema
 						accessor.Normalized = reader.ReadAsBoolean().Value;
 						break;
 					case "count":
-						accessor.Count = reader.ReadDoubleAsInt32();
+						accessor.Count = reader.ReadDoubleAsUInt32();
 						break;
 					case "type":
 						accessor.Type = reader.ReadStringEnum<GLTFAccessorAttributeType>();

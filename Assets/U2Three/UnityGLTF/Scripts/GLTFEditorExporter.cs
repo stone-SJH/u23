@@ -1125,7 +1125,7 @@ namespace UnityGLTF
 			}
 
 			var accessor = new Accessor();
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.SCALAR;
 
 			int min = arr[0];
@@ -1237,7 +1237,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.SCALAR;
 
 			float min = arr[0];
@@ -1293,7 +1293,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC2;
 
 			float minX = arr[0].x;
@@ -1357,7 +1357,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC3;
 
 			if (switchHandedness)
@@ -1440,7 +1440,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC3;
 			
 			if (switchHandedness)
@@ -1547,7 +1547,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.UnsignedShort;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
 
 			float minX = arr[0].x;
@@ -1624,7 +1624,8 @@ namespace UnityGLTF
 			return id;
 		}
 
-		private AccessorId ExportAccessor(Vector4[] arr, bool switchHandedness=false)
+		private AccessorId ExportAccessor(Vector4[] arr, bool switchHandedness=false,
+			GLTFComponentType componentType = GLTFComponentType.Float)
 		{
 			var count = arr.Length;
 
@@ -1634,8 +1635,8 @@ namespace UnityGLTF
 			}
 
 			var accessor = new Accessor();
-			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.ComponentType = componentType;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
 			
 			if (switchHandedness)
@@ -1729,7 +1730,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
 
 			float minR = arr[0].r;
@@ -1815,7 +1816,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.MAT4;
 
 			// Dont serialize min/max for matrices
@@ -2321,7 +2322,7 @@ namespace UnityGLTF
 			foreach(MeshPrimitive prim in gltfMesh.Primitives)
 			{
 				if(!prim.Attributes.ContainsKey("JOINTS_0"))
-					prim.Attributes.Add("JOINTS_0", ExportAccessor(bones));
+					prim.Attributes.Add("JOINTS_0", ExportAccessor(bones, false,  GLTFComponentType.Float));
 				if (!prim.Attributes.ContainsKey("WEIGHTS_0"))
 					prim.Attributes.Add("WEIGHTS_0", ExportAccessor(weights));
 			}

@@ -779,7 +779,7 @@ namespace UnityGLTF
 			}
 
 			var accessor = new Accessor();
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.SCALAR;
 
 			int min = arr[0];
@@ -877,7 +877,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC2;
 
 			float minX = arr[0].x;
@@ -941,7 +941,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC3;
 
 			float minX = arr[0].x;
@@ -1016,7 +1016,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
 
 			float minX = arr[0].x;
@@ -1102,7 +1102,7 @@ namespace UnityGLTF
 
 			var accessor = new Accessor();
 			accessor.ComponentType = GLTFComponentType.Float;
-			accessor.Count = count;
+			accessor.Count = (uint)count;
 			accessor.Type = GLTFAccessorAttributeType.VEC4;
 
 			float minR = arr[0].r;
