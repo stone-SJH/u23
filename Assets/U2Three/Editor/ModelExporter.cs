@@ -62,16 +62,16 @@ namespace U2Three.Editor
                 if (path.Length > 0)
                     BeginExportModel(path);
             }
-            
-            if (GUILayout.Button($"Export Selection to GLTF"))
-            {
-                m_exportedFileName =
-                    EditorUtility.SaveFilePanel("Export Models for ThreeJS(GLTF)", "", m_selections[0].name, ""); 
-                
-                if (GenerateGLTFZipped(m_selections) != null) {
-                    EditorUtility.DisplayDialog("Successful Export", "GLTF Exported and Zipped Successfully", "OK");
-                }
-            }
+            //
+            // if (GUILayout.Button($"Export Selection to GLTF"))
+            // {
+            //     m_exportedFileName =
+            //         EditorUtility.SaveFilePanel("Export Models for ThreeJS(GLTF)", "", m_selections[0].name, ""); 
+            //     
+            //     if (GenerateGLTFZipped(m_selections) != null) {
+            //         EditorUtility.DisplayDialog("Successful Export", "GLTF Exported and Zipped Successfully", "OK");
+            //     }
+            // }
 
             if (m_isGenerating)
             {
@@ -114,54 +114,54 @@ namespace U2Three.Editor
         }
 
         #region ExportToGLTF
-        public Tuple<string, string, string> GenerateGLTFZipped(Transform[] targets) {
-            var path = GenerateGLTF(targets);
-
-            if (path == null) {
-                return path;
-            }
-
-            // otherwise, we need to zip up the entire directory
-            // and delete the original
-            FileHelper.CompressDirectory(path.Item2, path.Item1 + "/" + path.Item3);
-            FileHelper.DeleteDirectory(path.Item2);
-
-            return path;
-        }
-        public Tuple<string, string, string> GenerateGLTF(Transform[] targets) {
-            FileHelper.LastEditorPath = Path.GetDirectoryName(m_exportedFileName);
-
-            string filename = Path.GetFileNameWithoutExtension(m_exportedFileName);
-            Debug.Log(filename);
-
-            var path = FileHelper.LastEditorPath;
-            Debug.Log(path);
-            if (!string.IsNullOrEmpty(path)) {
-                var newpath = path + "/" + filename + "_export_gltf";
-                Debug.Log(newpath);
-                DirectoryInfo info = Directory.CreateDirectory(newpath);
-
-                if (info.Exists) {
-                    if (FileHelper.ExportAnimations == true) {
-                        var exporter = new GLTFEditorExporter(targets);
-                        exporter.SaveGLTFandBin(newpath, filename);
-                    } 
-                    else {
-                        var exporter = new GLTFSceneExporter(targets);
-                        exporter.SaveGLTFandBin(newpath, filename);
-                    }
-
-                    return new Tuple<string, string, string>(path, newpath, filename);
-                }
-
-                EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, could not create export path", "OK");
-            } else {
-                EditorGUILayout.HelpBox("Failed to export since the path is invalid", MessageType.Error);
-                EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, invalid export path provided", "OK");
-            }
-
-            return null;
-        }
+        // public Tuple<string, string, string> GenerateGLTFZipped(Transform[] targets) {
+        //     var path = GenerateGLTF(targets);
+        //
+        //     if (path == null) {
+        //         return path;
+        //     }
+        //
+        //     // otherwise, we need to zip up the entire directory
+        //     // and delete the original
+        //     FileHelper.CompressDirectory(path.Item2, path.Item1 + "/" + path.Item3);
+        //     FileHelper.DeleteDirectory(path.Item2);
+        //
+        //     return path;
+        // }
+        // public Tuple<string, string, string> GenerateGLTF(Transform[] targets) {
+        //     FileHelper.LastEditorPath = Path.GetDirectoryName(m_exportedFileName);
+        //
+        //     string filename = Path.GetFileNameWithoutExtension(m_exportedFileName);
+        //     Debug.Log(filename);
+        //
+        //     var path = FileHelper.LastEditorPath;
+        //     Debug.Log(path);
+        //     if (!string.IsNullOrEmpty(path)) {
+        //         var newpath = path + "/" + filename + "_export_gltf";
+        //         Debug.Log(newpath);
+        //         DirectoryInfo info = Directory.CreateDirectory(newpath);
+        //
+        //         if (info.Exists) {
+        //             if (FileHelper.ExportAnimations == true) {
+        //                 var exporter = new GLTFEditorExporter(targets);
+        //                 exporter.SaveGLTFandBin(newpath, filename);
+        //             } 
+        //             else {
+        //                 var exporter = new GLTFSceneExporter(targets);
+        //                 exporter.SaveGLTFandBin(newpath, filename);
+        //             }
+        //
+        //             return new Tuple<string, string, string>(path, newpath, filename);
+        //         }
+        //
+        //         EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, could not create export path", "OK");
+        //     } else {
+        //         EditorGUILayout.HelpBox("Failed to export since the path is invalid", MessageType.Error);
+        //         EditorUtility.DisplayDialog("Failed Export", "GLTF Could not be exported, invalid export path provided", "OK");
+        //     }
+        //
+        //     return null;
+        // }
         #endregion
 
         #region ExportToXML
